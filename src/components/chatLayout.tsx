@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
@@ -59,34 +59,40 @@ export function ChatLayout({ user }: ChatLayoutProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
 
+  const subscriptionRef = useRef<any>(null);
+
   const displayName = user.user_metadata?.display_name || user.email;
   const currentChannel = channels.find(c => c.id === selectedChannel);
   const serverChannels = channels.filter(c => c.serverId === selectedServer);
 
+  const fetchMessages = async (channelId: number) => {
+    setLoadingMessages(true);
+    setMessages([]);
+
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('channel_id', channelId)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching messages:', error.message.toString());
+    } else {
+      setMessages(data || []);
+    }
+
+    setLoadingMessages(false);
+  };
+
   useEffect(() => {
-    const fetchMessages = async () => {
-      setLoadingMessages(true);
-      setMessages([]);
+    fetchMessages(selectedChannel);
 
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('channel_id', selectedChannel)
-        .order('created_at', { ascending: true });
-
-      if (error) {
-        console.error('Error fetching messages:', error.message.toString());
-      } else {
-        setMessages(data || []);
-      }
-
-      setLoadingMessages(false);
-    };
-
-    fetchMessages();
+    if (subscriptionRef.current) {
+      supabase.removeChannel(subscriptionRef.current);
+    }
 
     const subscription = supabase
-      .channel(`messages:${selectedChannel}`)
+      .channel(`messages-channel-${selectedChannel}`)
       .on(
         'postgres_changes',
         {
@@ -96,13 +102,38 @@ export function ChatLayout({ user }: ChatLayoutProps) {
           filter: `channel_id=eq.${selectedChannel}`,
         },
         (payload) => {
-          setMessages(prev => [...prev, payload.new as Message]);
+          const newMessage = payload.new as Message;
+          setMessages(prev => {
+            if (prev.some(msg => msg.id === newMessage.id)) return prev;
+
+            // Replace optimistic duplicate: same content, same user, within 5 seconds
+            const optimisticIndex = prev.findIndex(
+              msg => !msg.failed &&
+                msg.display_name === newMessage.display_name &&
+                msg.content === newMessage.content &&
+                Math.abs(new Date(msg.created_at).getTime() - new Date(newMessage.created_at).getTime()) < 5000
+            );
+
+            if (optimisticIndex !== -1) {
+              const updated = [...prev];
+              updated[optimisticIndex] = newMessage;
+              return updated;
+            }
+
+            return [...prev, newMessage];
+          });
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Subscription status:', status);
+      });
+
+    subscriptionRef.current = subscription;
 
     return () => {
-      supabase.removeChannel(subscription);
+      if (subscriptionRef.current) {
+        supabase.removeChannel(subscriptionRef.current);
+      }
     };
   }, [selectedChannel]);
 
@@ -113,8 +144,9 @@ export function ChatLayout({ user }: ChatLayoutProps) {
   const handleSendMessage = async () => {
     if (!message.trim()) return;
 
+    const tempId = crypto.randomUUID();
     const newMessage: Message = {
-      id: crypto.randomUUID(),
+      id: tempId,
       content: message.trim(),
       display_name: displayName as string,
       channel_id: selectedChannel,
@@ -137,7 +169,7 @@ export function ChatLayout({ user }: ChatLayoutProps) {
     if (error) {
       console.error('Error sending message:', error.message.toString());
       setMessages(prev =>
-        prev.map(m => m.id === newMessage.id ? { ...m, failed: true } : m)
+        prev.map(m => m.id === tempId ? { ...m, failed: true } : m)
       );
     }
   };
