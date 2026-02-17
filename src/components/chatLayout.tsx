@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
@@ -18,6 +18,14 @@ import type { User } from '@supabase/supabase-js';
 
 const DRAWER_WIDTH = 240;
 
+interface Message {
+  id: string;
+  content: string;
+  display_name: string;
+  channel_id: number;
+  created_at: string;
+}
+
 interface ChatLayoutProps {
   user: User;
 }
@@ -36,21 +44,90 @@ export function ChatLayout({ user }: ChatLayoutProps) {
   const [selectedChannel, setSelectedChannel] = useState(1);
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<any[]>([]);
+  const [loadingMessages, setLoadingMessages] = useState(false);
+
+
+  const displayName = user.user_metadata?.display_name || user.email;
+  const currentChannel = channels.find(c => c.id === selectedChannel);
+  const serverChannels = channels.filter(c => c.serverId === selectedServer);
+
+  useEffect(() => {
+    const fetchMessages = async () => {
+        setLoadingMessages(true);
+        setMessages([]);
+
+        const { data, error } = await supabase
+            .from('messages')
+            .select('*')
+            .eq('channel_id', selectedChannel)
+            .order('created_at', {ascending: true});
+        
+        if (error){
+            console.error('error fetching messages: ',error.message.toString())
+
+        }else{
+            setMessages(data || []);
+        }
+        setLoadingMessages(false);
+    };
+
+    fetchMessages();
+
+    const subscription = supabase
+        .channel(`messages:${selectedChannel}`)
+        .on(
+            'postgres_changes',
+            {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'messages',
+                filter: `channel_id=eq.${selectedChannel}`,
+            },
+            (payload) => {
+                setMessages(prev => [...prev, payload.new as Message]);
+            }
+        )
+        .subscribe();
+        return () => {
+            supabase.removeChannel(subscription);
+        };
+  }, [selectedChannel]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
   };
 
-  const handleSendMessage = () => {
-    if (message.trim()) {
-      setMessages([...messages, { content: message, user: displayName }]);
-      setMessage('');
+  const handleSendMessage = async () => {
+    if(!message.trim()){
+        return;
     }
+    const newMessage = {
+        id: crypto.randomUUID(),
+        content: message.trim(),
+        user_id: user.id,
+        display_name: displayName as string,
+        channel_id: selectedChannel,
+        created_at: new Date().toISOString(),
+    };
+
+    setMessages(prev => [...prev, newMessage])
+    setMessage('');
+
+    
+    const { error } = await supabase
+        .from('messages')
+        .insert({
+            content: newMessage.content,
+            user_id: user.id,
+            display_name: displayName,
+            channel_id: selectedChannel,
+        });
+
+    if (error) {
+      console.error('Error sending message:', error.message.toString());
+    } 
   };
 
-  const displayName = user.user_metadata?.display_name || user.email;
-  const currentChannel = channels.find(c => c.id === selectedChannel);
-  const serverChannels = channels.filter(c => c.serverId === selectedServer);
 
   return (
     <Box sx={{ display: 'flex', height: '100vh', bgcolor: 'background.default' }}>
@@ -198,15 +275,19 @@ export function ChatLayout({ user }: ChatLayoutProps) {
             bgcolor: 'background.default',
           }}
         >
-          {messages.length === 0 ? (
+          {loadingMessages ? (
+            <Typography sx={{ color: 'text.secondary', textAlign: 'center', mt: 4 }}>
+              Loading messages...
+            </Typography>
+          ) : messages.length === 0 ? (
             <Typography sx={{ color: 'text.secondary', textAlign: 'center', mt: 4 }}>
               No messages yet. Start the conversation!
             </Typography>
           ) : (
-            messages.map((msg, idx) => (
-              <Box key={idx} sx={{ mb: 2 }}>
+            messages.map((msg) => (
+              <Box key={msg.id} sx={{ mb: 2 }}>
                 <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 'bold' }}>
-                  {msg.user}
+                  {msg.display_name}
                 </Typography>
                 <Typography variant="body1">{msg.content}</Typography>
               </Box>
@@ -236,4 +317,4 @@ export function ChatLayout({ user }: ChatLayoutProps) {
       </Box>
     </Box>
   );
-};
+}
