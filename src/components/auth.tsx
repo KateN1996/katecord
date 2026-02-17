@@ -10,7 +10,9 @@ export function Auth() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [displayName, setDisplayName] = useState(''); // ADD THIS LINE
   const [error, setError] = useState<string | null>(null);
+  const [isSignUp, setIsSignUp] = useState(false); // FIXED: was setSignUp
 
   const validateInputs = (): boolean => {
     if (!email || !password) {
@@ -25,6 +27,10 @@ export function Auth() {
       setError('Password must be at least 6 characters long');
       return false;
     }
+    if (isSignUp && !displayName.trim()) {
+      setError('Please enter a display name');
+      return false;
+    }
     return true;
   };
 
@@ -34,14 +40,16 @@ export function Auth() {
     try {
       setLoading(true);
       setError(null);
-      
       const { error } = await supabase.auth.signUp({ 
         email, 
-        password 
+        password,
+        options: {
+          data: {
+            display_name: displayName
+          }
+        }
       });
-      
       if (error) throw error;
-      
       alert('Check your email for the confirmation link!');
     } catch (error: any) {
       setError(error.message);
@@ -56,12 +64,10 @@ export function Auth() {
     try {
       setLoading(true);
       setError(null);
-      
       const { error } = await supabase.auth.signInWithPassword({ 
         email, 
         password 
       });
-      
       if (error) throw error;
     } catch (error: any) {
       setError(error.message);
@@ -72,7 +78,11 @@ export function Auth() {
 
   const handleKeyPress = (event: React.KeyboardEvent) => {
     if (event.key === 'Enter' && !loading) {
-      handleSignIn();
+      if (isSignUp) {
+        handleSignUp();
+      } else {
+        handleSignIn();
+      }
     }
   };
 
@@ -89,9 +99,9 @@ export function Auth() {
         gutterBottom
         sx={{ textAlign: 'center' }}
       >
-        Welcome Back
+        {isSignUp ? 'Create Account' : 'Welcome Back'}
       </Typography>
-      
+
       {error && (
         <Alert 
           severity="error" 
@@ -101,7 +111,19 @@ export function Auth() {
           {error}
         </Alert>
       )}
-      
+
+      {isSignUp && (
+        <TextField
+          label="Display Name"
+          fullWidth
+          value={displayName}
+          onChange={(e) => setDisplayName(e.target.value)}
+          sx={{ mb: 2 }}
+          disabled={loading}
+          autoFocus
+        />
+      )}
+
       <TextField
         label="Email"
         type="email"
@@ -112,9 +134,9 @@ export function Auth() {
         sx={{ mb: 2 }}
         disabled={loading}
         autoComplete="email"
-        autoFocus
+        autoFocus={!isSignUp}
       />
-      
+
       <TextField
         label="Password"
         type="password"
@@ -126,27 +148,48 @@ export function Auth() {
         disabled={loading}
         autoComplete="current-password"
       />
-      
-      <Button 
-        variant="contained" 
-        fullWidth 
-        onClick={handleSignIn}
-        disabled={loading}
-        sx={{ mb: 1 }}
-        size="large"
-      >
-        {loading ? 'Loading...' : 'Sign In'}
-      </Button>
-      
-      <Button 
-        variant="outlined" 
-        fullWidth 
-        onClick={handleSignUp}
-        disabled={loading}
-        size="large"
-      >
-        Create Account
-      </Button>
+
+      {isSignUp ? (
+        <>
+          <Button 
+            variant="contained" 
+            fullWidth 
+            onClick={handleSignUp}
+            disabled={loading}
+            sx={{ mb: 1 }}
+            size="large"
+          >
+            {loading ? 'Loading...' : 'Sign Up'}
+          </Button>
+          <Button 
+            variant="text" 
+            fullWidth 
+            onClick={() => setIsSignUp(false)}
+          >
+            Already have an account? Sign In
+          </Button>
+        </>
+      ) : (
+        <>
+          <Button 
+            variant="contained" 
+            fullWidth 
+            onClick={handleSignIn}
+            disabled={loading}
+            sx={{ mb: 1 }}
+            size="large"
+          >
+            {loading ? 'Loading...' : 'Sign In'}
+          </Button>
+          <Button 
+            variant="text" 
+            fullWidth 
+            onClick={() => setIsSignUp(true)}
+          >
+            Need an account? Sign Up
+          </Button>
+        </>
+      )}
     </Box>
   );
 }

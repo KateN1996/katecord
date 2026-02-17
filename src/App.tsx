@@ -29,6 +29,8 @@ function App() {
     return <Auth />;
   }
 
+  const displayName = user.user_metadata?.display_name || user.email;
+
   return (
   <Box sx={{ padding: 4 }}>
     <Typography variant="h3" gutterBottom>
@@ -36,7 +38,7 @@ function App() {
     </Typography>
     {user ? (
       <>
-        <Typography>Welcome, {user.email}!</Typography>
+        <Typography>Welcome, {displayName}!</Typography>
         <Button variant="outlined" onClick={handleSignOut} sx={{ mt: 2 }}>
           Sign Out
         </Button>
