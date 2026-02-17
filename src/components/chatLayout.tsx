@@ -24,6 +24,7 @@ interface Message {
   display_name: string;
   channel_id: number;
   created_at: string;
+  failed?: boolean;
 }
 
 interface ChatLayoutProps {
@@ -125,6 +126,9 @@ export function ChatLayout({ user }: ChatLayoutProps) {
 
     if (error) {
       console.error('Error sending message:', error.message.toString());
+      setMessages(prev => 
+      prev.map(m => m.id === newMessage.id ? { ...m, failed: true } : m)
+    );
     } 
   };
 
@@ -289,7 +293,13 @@ export function ChatLayout({ user }: ChatLayoutProps) {
                 <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 'bold' }}>
                   {msg.display_name}
                 </Typography>
-                <Typography variant="body1">{msg.content}</Typography>
+                <Typography variant="body1">{msg.content} sx={{color: msg.failed ? 'error.main': 'text.primary'}}
+                    {msg.content}
+                </Typography>
+                {msg.failed && (
+                    <Typography variant="caption" sx={{color: 'error.main'}}>
+                    Failed to send. Click to retry when I implement that functionality lol</Typography>
+                )}
               </Box>
             ))
           )}
