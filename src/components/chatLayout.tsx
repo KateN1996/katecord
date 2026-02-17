@@ -44,9 +44,8 @@ export function ChatLayout({ user }: ChatLayoutProps) {
   const [selectedServer, setSelectedServer] = useState(1);
   const [selectedChannel, setSelectedChannel] = useState(1);
   const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
-
 
   const displayName = user.user_metadata?.display_name || user.email;
   const currentChannel = channels.find(c => c.id === selectedChannel);
@@ -54,44 +53,45 @@ export function ChatLayout({ user }: ChatLayoutProps) {
 
   useEffect(() => {
     const fetchMessages = async () => {
-        setLoadingMessages(true);
-        setMessages([]);
+      setLoadingMessages(true);
+      setMessages([]);
 
-        const { data, error } = await supabase
-            .from('messages')
-            .select('*')
-            .eq('channel_id', selectedChannel)
-            .order('created_at', {ascending: true});
-        
-        if (error){
-            console.error('error fetching messages: ',error.message.toString())
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('channel_id', selectedChannel)
+        .order('created_at', { ascending: true });
 
-        }else{
-            setMessages(data || []);
-        }
-        setLoadingMessages(false);
+      if (error) {
+        console.error('Error fetching messages:', error.message.toString());
+      } else {
+        setMessages(data || []);
+      }
+
+      setLoadingMessages(false);
     };
 
     fetchMessages();
 
     const subscription = supabase
-        .channel(`messages:${selectedChannel}`)
-        .on(
-            'postgres_changes',
-            {
-                event: 'INSERT',
-                schema: 'public',
-                table: 'messages',
-                filter: `channel_id=eq.${selectedChannel}`,
-            },
-            (payload) => {
-                setMessages(prev => [...prev, payload.new as Message]);
-            }
-        )
-        .subscribe();
-        return () => {
-            supabase.removeChannel(subscription);
-        };
+      .channel(`messages:${selectedChannel}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `channel_id=eq.${selectedChannel}`,
+        },
+        (payload) => {
+          setMessages(prev => [...prev, payload.new as Message]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(subscription);
+    };
   }, [selectedChannel]);
 
   const handleSignOut = async () => {
@@ -99,39 +99,36 @@ export function ChatLayout({ user }: ChatLayoutProps) {
   };
 
   const handleSendMessage = async () => {
-    if(!message.trim()){
-        return;
-    }
-    const newMessage = {
-        id: crypto.randomUUID(),
-        content: message.trim(),
-        user_id: user.id,
-        display_name: displayName as string,
-        channel_id: selectedChannel,
-        created_at: new Date().toISOString(),
+    if (!message.trim()) return;
+
+    const newMessage: Message = {
+      id: crypto.randomUUID(),
+      content: message.trim(),
+      display_name: displayName as string,
+      channel_id: selectedChannel,
+      created_at: new Date().toISOString(),
+      failed: false,
     };
 
-    setMessages(prev => [...prev, newMessage])
+    setMessages(prev => [...prev, newMessage]);
     setMessage('');
 
-    
     const { error } = await supabase
-        .from('messages')
-        .insert({
-            content: newMessage.content,
-            user_id: user.id,
-            display_name: displayName,
-            channel_id: selectedChannel,
-        });
+      .from('messages')
+      .insert({
+        content: newMessage.content,
+        user_id: user.id,
+        display_name: displayName,
+        channel_id: selectedChannel,
+      });
 
     if (error) {
       console.error('Error sending message:', error.message.toString());
-      setMessages(prev => 
-      prev.map(m => m.id === newMessage.id ? { ...m, failed: true } : m)
-    );
-    } 
+      setMessages(prev =>
+        prev.map(m => m.id === newMessage.id ? { ...m, failed: true } : m)
+      );
+    }
   };
-
 
   return (
     <Box sx={{ display: 'flex', height: '100vh', bgcolor: 'background.default' }}>
@@ -293,12 +290,16 @@ export function ChatLayout({ user }: ChatLayoutProps) {
                 <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 'bold' }}>
                   {msg.display_name}
                 </Typography>
-                <Typography variant="body1">{msg.content} sx={{color: msg.failed ? 'error.main': 'text.primary'}}
-                    {msg.content}
+                <Typography
+                  variant="body1"
+                  sx={{ color: msg.failed ? 'error.main' : 'text.primary' }}
+                >
+                  {msg.content}
                 </Typography>
                 {msg.failed && (
-                    <Typography variant="caption" sx={{color: 'error.main'}}>
-                    Failed to send. Click to retry when I implement that functionality lol</Typography>
+                  <Typography variant="caption" sx={{ color: 'error.main' }}>
+                    Failed to send. Click to retry when I implement that functionality lol
+                  </Typography>
                 )}
               </Box>
             ))
