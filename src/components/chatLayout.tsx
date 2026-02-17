@@ -31,6 +31,18 @@ interface ChatLayoutProps {
   user: User;
 }
 
+const formatMessageTime = (timestamp: string): string => {
+  const messageDate = new Date(timestamp);
+  const today = new Date();
+  const isToday = messageDate.toLocaleDateString() === today.toLocaleDateString();
+
+  if (isToday) {
+    return `Today at ${messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  }
+
+  return messageDate.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+};
+
 export function ChatLayout({ user }: ChatLayoutProps) {
   const theme = useTheme();
   const [servers, _setServers] = useState([
@@ -287,9 +299,14 @@ export function ChatLayout({ user }: ChatLayoutProps) {
           ) : (
             messages.map((msg) => (
               <Box key={msg.id} sx={{ mb: 2 }}>
-                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 'bold' }}>
-                  {msg.display_name}
-                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 'bold' }}>
+                    {msg.display_name}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                    {formatMessageTime(msg.created_at)}
+                  </Typography>
+                </Box>
                 <Typography
                   variant="body1"
                   sx={{ color: msg.failed ? 'error.main' : 'text.primary' }}
