@@ -22,9 +22,9 @@ function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-  };
+  // const handleSignOut = async () => {
+  //   await supabase.auth.signOut();
+  // };
 
   if (!user) {
     return <Auth />;

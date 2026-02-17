@@ -24,11 +24,11 @@ interface ChatLayoutProps {
 
 export function ChatLayout({ user }: ChatLayoutProps) {
   const theme = useTheme();
-  const [servers, setServers] = useState([
+  const [servers, _setServers] = useState([
     { id: 1, name: 'Gooncord' },
     { id: 2, name: 'Crackheadnation' },
   ]);
-  const [channels, setChannels] = useState([
+  const [channels, _setChannels] = useState([
     { id: 1, name: 'general', serverId: 1 },
     { id: 2, name: 'vent', serverId: 1 },
   ]);
@@ -54,6 +54,7 @@ export function ChatLayout({ user }: ChatLayoutProps) {
 
   return (
     <Box sx={{ display: 'flex', height: '100vh', bgcolor: 'background.default' }}>
+      {/* Server List */}
       <Drawer
         variant="permanent"
         sx={{
@@ -75,9 +76,11 @@ export function ChatLayout({ user }: ChatLayoutProps) {
                 sx={{
                   height: 48,
                   borderRadius: '50%',
-                  bgcolor: selectedServer === server.id ? 'primary.main' : '#7777ee',
+                  bgcolor: selectedServer === server.id
+                    ? theme.palette.primary.main
+                    : theme.palette.primary.light,
                   '&:hover': {
-                    bgcolor: 'primary.main',
+                    bgcolor: theme.palette.primary.main,
                     borderRadius: '30%',
                   },
                   transition: 'all 0.2s',
@@ -95,9 +98,9 @@ export function ChatLayout({ user }: ChatLayoutProps) {
               sx={{
                 height: 48,
                 borderRadius: '50%',
-                bgcolor: '#7777ee',
+                bgcolor: theme.palette.primary.light,
                 '&:hover': {
-                  bgcolor: '#88dd88',
+                  bgcolor: theme.palette.success.light,
                   borderRadius: '30%',
                 },
                 transition: 'all 0.2s',
@@ -110,6 +113,7 @@ export function ChatLayout({ user }: ChatLayoutProps) {
         </List>
       </Drawer>
 
+      {/* Channel List */}
       <Drawer
         variant="permanent"
         sx={{
@@ -118,20 +122,19 @@ export function ChatLayout({ user }: ChatLayoutProps) {
           '& .MuiDrawer-paper': {
             width: DRAWER_WIDTH,
             boxSizing: 'border-box',
-            bgcolor: '#d0d0ff',
             borderRight: 'none',
             left: 72,
           },
         }}
       >
-        <Box sx={{ p: 2, borderBottom: '1px solid #b0b0dd' }}>
-          <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333' }}>
+        <Box sx={{ p: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
+          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
             {servers.find(s => s.id === selectedServer)?.name}
           </Typography>
         </Box>
         <List>
           <ListItem>
-            <Typography variant="caption" sx={{ color: '#666', fontWeight: 'bold' }}>
+            <Typography variant="caption" sx={{ fontWeight: 'bold', color: 'text.secondary' }}>
               TEXT CHANNELS
             </Typography>
           </ListItem>
@@ -140,50 +143,44 @@ export function ChatLayout({ user }: ChatLayoutProps) {
               <ListItemButton
                 selected={selectedChannel === channel.id}
                 onClick={() => setSelectedChannel(channel.id)}
-                sx={{
-                  '&.Mui-selected': {
-                    bgcolor: '#b0b0ee',
-                  },
-                  '&:hover': {
-                    bgcolor: '#c0c0ee',
-                  },
-                }}
               >
-                <TagIcon sx={{ mr: 1, fontSize: 20, color: '#666' }} />
+                <TagIcon sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />
                 <ListItemText primary={channel.name} />
               </ListItemButton>
             </ListItem>
           ))}
           <ListItem disablePadding>
             <ListItemButton>
-              <AddIcon sx={{ mr: 1, fontSize: 20, color: '#666' }} />
+              <AddIcon sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />
               <ListItemText primary="Add Channel" />
             </ListItemButton>
           </ListItem>
         </List>
       </Drawer>
 
+      {/* Main Chat Area */}
       <Box
         component="main"
         sx={{
-        flexGrow: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        ml: 0,
-        minWidth: 0,
+          flexGrow: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          ml: 0,
+          minWidth: 0,
         }}
-        >
-        <AppBar 
-          position="static" 
+      >
+        {/* Top Bar */}
+        <AppBar
+          position="static"
           elevation={0}
-          sx={{ bgcolor: 'background.default', borderBottom: '1px solid #d0d0ff' }}
+          sx={{ bgcolor: 'background.default', borderBottom: `1px solid ${theme.palette.divider}` }}
         >
           <Toolbar>
-            <TagIcon sx={{ mr: 1, color: '#666' }} />
-            <Typography variant="h6" sx={{ flexGrow: 1, color: '#333' }}>
+            <TagIcon sx={{ mr: 1, color: 'text.secondary' }} />
+            <Typography variant="h6" sx={{ flexGrow: 1, color: 'text.primary' }}>
               {currentChannel?.name}
             </Typography>
-            <Typography sx={{ mr: 2, color: '#666' }}>
+            <Typography sx={{ mr: 2, color: 'text.secondary' }}>
               {displayName}
             </Typography>
             <Button onClick={handleSignOut} variant="outlined" size="small">
@@ -192,6 +189,7 @@ export function ChatLayout({ user }: ChatLayoutProps) {
           </Toolbar>
         </AppBar>
 
+        {/* Messages Area */}
         <Box
           sx={{
             flexGrow: 1,
@@ -201,13 +199,13 @@ export function ChatLayout({ user }: ChatLayoutProps) {
           }}
         >
           {messages.length === 0 ? (
-            <Typography sx={{ color: '#666', textAlign: 'center', mt: 4 }}>
+            <Typography sx={{ color: 'text.secondary', textAlign: 'center', mt: 4 }}>
               No messages yet. Start the conversation!
             </Typography>
           ) : (
             messages.map((msg, idx) => (
               <Box key={idx} sx={{ mb: 2 }}>
-                <Typography variant="caption" sx={{ color: '#666', fontWeight: 'bold' }}>
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 'bold' }}>
                   {msg.user}
                 </Typography>
                 <Typography variant="body1">{msg.content}</Typography>
@@ -216,6 +214,7 @@ export function ChatLayout({ user }: ChatLayoutProps) {
           )}
         </Box>
 
+        {/* Message Input */}
         <Box sx={{ p: 2, bgcolor: 'background.default' }}>
           <TextField
             fullWidth
@@ -237,4 +236,4 @@ export function ChatLayout({ user }: ChatLayoutProps) {
       </Box>
     </Box>
   );
-}
+};
