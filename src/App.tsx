@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './lib/supabase';
 import { Auth } from './components/auth';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
+// import Box from '@mui/material/Box';
+// import Button from '@mui/material/Button';
+// import Typography from '@mui/material/Typography';
 import type { User } from '@supabase/supabase-js';
+import { ChatLayout } from './components/chatLayout';
 
 function App() {
   const [user, setUser] = useState <User | null>(null)
@@ -29,25 +30,26 @@ function App() {
     return <Auth />;
   }
 
-  const displayName = user.user_metadata?.display_name || user.email;
-
-  return (
-  <Box sx={{ padding: 4 }}>
-    <Typography variant="h3" gutterBottom>
-      Katecord
-    </Typography>
-    {user ? (
-      <>
-        <Typography>Welcome, {displayName}!</Typography>
-        <Button variant="outlined" onClick={handleSignOut} sx={{ mt: 2 }}>
-          Sign Out
-        </Button>
-      </>
-    ) : (
-      <Typography>Please sign in</Typography>
-    )}
-  </Box>
-);
+  return <ChatLayout user={user}/>;
+//  const displayName = user.user_metadata?.display_name || user.email;
+//
+//   return (
+//   <Box sx={{ padding: 4 }}>
+//     <Typography variant="h3" gutterBottom>
+//       Katecord
+//     </Typography>
+//     {user ? (
+//       <>
+//         <Typography>Welcome, {displayName}!</Typography>
+//         <Button variant="outlined" onClick={handleSignOut} sx={{ mt: 2 }}>
+//           Sign Out
+//         </Button>
+//       </>
+//     ) : (
+//       <Typography>Please sign in</Typography>
+//     )}
+//   </Box>
+// );
 
 }
 

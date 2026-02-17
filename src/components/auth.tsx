@@ -130,7 +130,7 @@ export function Auth() {
         fullWidth
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        onKeyPress={handleKeyPress}
+        onKeyDown={handleKeyPress}
         sx={{ mb: 2 }}
         disabled={loading}
         autoComplete="email"
@@ -143,7 +143,7 @@ export function Auth() {
         fullWidth
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        onKeyPress={handleKeyPress}
+        onKeyDown={handleKeyPress}
         sx={{ mb: 2 }}
         disabled={loading}
         autoComplete="current-password"
