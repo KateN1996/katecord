@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './lib/supabase';
-import { Auth } from './components/auth';
+import { Auth } from './components/auth/auth';
 // import Box from '@mui/material/Box';
 // import Button from '@mui/material/Button';
 // import Typography from '@mui/material/Typography';
