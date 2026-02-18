@@ -5,7 +5,7 @@ import { Auth } from './components/auth';
 // import Button from '@mui/material/Button';
 // import Typography from '@mui/material/Typography';
 import type { User } from '@supabase/supabase-js';
-import { ChatLayout } from './components/chatLayout';
+import { ChatLayout } from './components/chat/chatLayout';
 
 function App() {
   const [user, setUser] = useState <User | null>(null)
