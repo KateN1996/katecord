@@ -58,7 +58,7 @@ export function ChatLayout({ user }: ChatLayoutProps) {
   //   { id: 2, name: 'vent', serverId: 1 },
   // ]);
   const [selectedServer, setSelectedServer] = useState(1);
-  const [selectedChannel, setSelectedChannel] = useState(1);
+  const [selectedChannel, setSelectedChannel] = useState<number | null>(null);
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
@@ -93,11 +93,15 @@ export function ChatLayout({ user }: ChatLayoutProps) {
 
       if (data) {
         setChannels(data);
+        if (data.length > 0 && !selectedChannel) {
+          setSelectedChannel(data[0].id);
+        }
       }
   };
 
   useEffect(() => {
     if (selectedServer) {
+      setSelectedChannel(null);
       loadChannels(selectedServer);
     }
   }, [selectedServer]);
@@ -122,6 +126,10 @@ export function ChatLayout({ user }: ChatLayoutProps) {
   };
 
   useEffect(() => {
+    if (!selectedChannel){
+      return;
+      
+    }
     fetchMessages(selectedChannel);
 
     if (subscriptionRef.current) {
@@ -217,7 +225,7 @@ export function ChatLayout({ user }: ChatLayoutProps) {
       {/* Server List */}
       <ServerList
         servers={servers}
-        selectedServer={selectedServer}
+        selectedServer={selectedServer || 0}
         onSelectServer={setSelectedServer}
         onServersChange={loadServers}
       />

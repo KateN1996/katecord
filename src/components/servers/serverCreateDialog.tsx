@@ -33,24 +33,53 @@ export function ServerCreateDialog({
     setLoading(true);
     setError(null);
 
-    const { data: userData } = await supabase.auth.getUser();
+    const { data: user } = await supabase.auth.getUser();
+
+    if (!user){
+        setError('girl log yourself in'); 
+        setLoading(false);
+        return;
+    }
     
-    const { error } = await supabase
+    const {data: serverData, error: error } = await supabase
       .from('servers')
       .insert({
         name: serverName.trim(),
-        owner_id: userData.user?.id
-      });
+        owner_id: user.user?.id
+      })
+      .select()
+      .single();
 
-    setLoading(false);
+
 
     if (error) {
       setError(error.message);
-    } else {
-      setServerName('');
-      onServerCreated();
-      onClose();
+      setLoading(false);
+      return;
+    } 
+
+    const { error: channelError} = await supabase
+        .from('channels')
+        .insert({
+            server_id: serverData.id,
+            name: 'general',
+            description: 'Generally General',
+            created_by: user.user?.id
+        });
+    
+    if (channelError){
+        console.error('Error creating general channel:', channelError);
+        setError('Server created but failed to create general channel'); // is there a better way to do this? like a transaction
+        setLoading(false);
+        return;
+        
+
     }
+
+    setLoading(false);
+    setServerName('');
+    onServerCreated();
+    onClose();
   };
 
   return (
