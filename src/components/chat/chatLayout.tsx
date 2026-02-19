@@ -57,7 +57,7 @@ export function ChatLayout({ user }: ChatLayoutProps) {
   //   { id: 1, name: 'general', serverId: 1 },
   //   { id: 2, name: 'vent', serverId: 1 },
   // ]);
-  const [selectedServer, setSelectedServer] = useState(1);
+  const [selectedServer, setSelectedServer] = useState<number | null>(null);
   const [selectedChannel, setSelectedChannel] = useState<number | null>(null);
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
@@ -77,6 +77,11 @@ export function ChatLayout({ user }: ChatLayoutProps) {
     
       if (data){
         setServers(data);
+        console.log("in load servers this is the data:")
+        console.log("data")
+        console.log("\n/n\n/n")
+        console.log(data[0].id)
+        setSelectedServer(data[0].id);
       }
   }
 
@@ -85,6 +90,7 @@ export function ChatLayout({ user }: ChatLayoutProps) {
   }, []);
 
   const loadChannels = async (serverId: number) => {
+    console.log("Loading channels for server ID:", serverId);
     const {data} = await supabase
       .from('channels')
       .select('*')
@@ -92,16 +98,18 @@ export function ChatLayout({ user }: ChatLayoutProps) {
       .order('name') // TODO: again personalize this shit
 
       if (data) {
+        console.log("this is the fucking channels")
+        console.log(data)
         setChannels(data);
-        if (data.length > 0 && !selectedChannel) {
-          setSelectedChannel(data[0].id);
-        }
+        setSelectedChannel(data.length > 0 ? data[0].id : null);
+        // if (data.length > 0 && !selectedChannel) {
+        //   setSelectedChannel(data[0].id);
+        // }
       }
   };
 
   useEffect(() => {
     if (selectedServer) {
-      setSelectedChannel(null);
       loadChannels(selectedServer);
     }
   }, [selectedServer]);
@@ -128,7 +136,7 @@ export function ChatLayout({ user }: ChatLayoutProps) {
   useEffect(() => {
     if (!selectedChannel){
       return;
-      
+
     }
     fetchMessages(selectedChannel);
 
@@ -225,7 +233,7 @@ export function ChatLayout({ user }: ChatLayoutProps) {
       {/* Server List */}
       <ServerList
         servers={servers}
-        selectedServer={selectedServer || 0}
+        selectedServer={selectedServer}
         onSelectServer={setSelectedServer}
         onServersChange={loadServers}
       />

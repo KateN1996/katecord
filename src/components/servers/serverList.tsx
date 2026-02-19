@@ -11,7 +11,7 @@ import type { Server } from '../../types/chat';
 
 interface ServerListProps {
   servers: Server[];
-  selectedServer: number;
+  selectedServer: number | null;
   onSelectServer: (serverId: number) => void;
   onServersChange: () => void;
 }
@@ -48,7 +48,7 @@ export function ServerList({
                 sx={{
                   height: 48,
                   borderRadius: '50%',
-                  bgcolor: selectedServer === server.id
+                  bgcolor: selectedServer !== null && selectedServer === server.id
                     ? theme.palette.primary.main
                     : theme.palette.primary.light,
                   '&:hover': {
