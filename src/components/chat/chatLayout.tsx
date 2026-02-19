@@ -15,17 +15,19 @@ import TextField from '@mui/material/TextField';
 import AddIcon from '@mui/icons-material/Add';
 import TagIcon from '@mui/icons-material/Tag';
 import type { User } from '@supabase/supabase-js';
+import { ServerList } from '../servers/serverList';
+import type{ Server, Message, Channel } from '../../types/chat';
 
 const DRAWER_WIDTH = 240;
 
-interface Message {
-  id: string;
-  content: string;
-  display_name: string;
-  channel_id: number;
-  created_at: string;
-  failed?: boolean;
-}
+// interface Message {
+//   id: string;
+//   content: string;
+//   display_name: string;
+//   channel_id: number;
+//   created_at: string;
+//   failed?: boolean;
+// }
 
 interface ChatLayoutProps {
   user: User;
@@ -45,16 +47,18 @@ const formatMessageTime = (timestamp: string): string => {
 
 export function ChatLayout({ user }: ChatLayoutProps) {
   const theme = useTheme();
-  const [servers, _setServers] = useState([
-    { id: 1, name: 'Gooncord' },
-    { id: 2, name: 'Crackheadnation' },
-  ]);
-  const [channels, _setChannels] = useState([
-    { id: 1, name: 'general', serverId: 1 },
-    { id: 2, name: 'vent', serverId: 1 },
-  ]);
-  const [selectedServer, setSelectedServer] = useState(1);
-  const [selectedChannel, setSelectedChannel] = useState(1);
+  // const [servers, _setServers] = useState([
+  //   { id: 1, name: 'Gooncord' },
+  //   { id: 2, name: 'Crackheadnation' },
+  // ]);
+  const [servers, setServers] = useState<Server[]>([]);
+  const [channels, setChannels] = useState<Channel[]>([]);
+  // const [channels, _setChannels] = useState([
+  //   { id: 1, name: 'general', serverId: 1 },
+  //   { id: 2, name: 'vent', serverId: 1 },
+  // ]);
+  const [selectedServer, setSelectedServer] = useState<number | null>(null);
+  const [selectedChannel, setSelectedChannel] = useState<number | null>(null);
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
@@ -63,7 +67,52 @@ export function ChatLayout({ user }: ChatLayoutProps) {
 
   const displayName = user.user_metadata?.display_name || user.email;
   const currentChannel = channels.find(c => c.id === selectedChannel);
-  const serverChannels = channels.filter(c => c.serverId === selectedServer);
+  const serverChannels = channels.filter(c => c.server_id === selectedServer);
+
+  const loadServers = async () => {
+    const {data } = await supabase
+      .from('servers')
+      .select('*')
+      .order('created_at'); // lets just do it by time created at right now  and figure out personal ordering later
+    
+      if (data){
+        setServers(data);
+        console.log("in load servers this is the data:")
+        console.log("data")
+        console.log("\n/n\n/n")
+        console.log(data[0].id)
+        setSelectedServer(data[0].id);
+      }
+  }
+
+  useEffect(() => {
+    loadServers();
+  }, []);
+
+  const loadChannels = async (serverId: number) => {
+    console.log("Loading channels for server ID:", serverId);
+    const {data} = await supabase
+      .from('channels')
+      .select('*')
+      .eq('server_id', serverId)
+      .order('name') // TODO: again personalize this shit
+
+      if (data) {
+        console.log("this is the fucking channels")
+        console.log(data)
+        setChannels(data);
+        setSelectedChannel(data.length > 0 ? data[0].id : null);
+        // if (data.length > 0 && !selectedChannel) {
+        //   setSelectedChannel(data[0].id);
+        // }
+      }
+  };
+
+  useEffect(() => {
+    if (selectedServer) {
+      loadChannels(selectedServer);
+    }
+  }, [selectedServer]);
 
   const fetchMessages = async (channelId: number) => {
     setLoadingMessages(true);
@@ -85,6 +134,10 @@ export function ChatLayout({ user }: ChatLayoutProps) {
   };
 
   useEffect(() => {
+    if (!selectedChannel){
+      return;
+
+    }
     fetchMessages(selectedChannel);
 
     if (subscriptionRef.current) {
@@ -142,13 +195,14 @@ export function ChatLayout({ user }: ChatLayoutProps) {
   };
 
   const handleSendMessage = async () => {
-    if (!message.trim()) return;
+    if (!message.trim() || !selectedChannel) return;
 
     const tempId = crypto.randomUUID();
     const newMessage: Message = {
       id: tempId,
       content: message.trim(),
       display_name: displayName as string,
+      user_id: user.id,
       channel_id: selectedChannel,
       created_at: new Date().toISOString(),
       failed: false,
@@ -177,7 +231,13 @@ export function ChatLayout({ user }: ChatLayoutProps) {
   return (
     <Box sx={{ display: 'flex', height: '100vh', bgcolor: 'background.default' }}>
       {/* Server List */}
-      <Drawer
+      <ServerList
+        servers={servers}
+        selectedServer={selectedServer}
+        onSelectServer={setSelectedServer}
+        onServersChange={loadServers}
+      />
+      {/* <Drawer
         variant="permanent"
         sx={{
           width: 72,
@@ -233,7 +293,7 @@ export function ChatLayout({ user }: ChatLayoutProps) {
             </ListItemButton>
           </ListItem>
         </List>
-      </Drawer>
+      </Drawer> */}
 
       {/* Channel List */}
       <Drawer
