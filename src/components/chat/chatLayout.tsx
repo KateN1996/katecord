@@ -195,7 +195,7 @@ export function ChatLayout({ user }: ChatLayoutProps) {
   };
 
   const handleSendMessage = async () => {
-    if (!message.trim()) return;
+    if (!message.trim() || !selectedChannel) return;
 
     const tempId = crypto.randomUUID();
     const newMessage: Message = {
