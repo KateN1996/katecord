@@ -12,7 +12,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { ChannelCreateDialog } from './channelCreateDialog';
 import type { Channel, Server } from '../../types/chat';
 
-const DRAWER_WID = 240;
+const DRAWER_WIDTH = 240;
 
 interface ChannelListProps {
     server: Server;
@@ -22,19 +22,19 @@ interface ChannelListProps {
     onChannelChange: () => void;
 }
 
-export function ChannelList({server: server, channels, selectedChannel, onSelectChannel, onChannelChange: _onChannelChange}: ChannelListProps){
+export function ChannelList({server: server, channels, selectedChannel, onSelectChannel, onChannelChange: onChannelChange}: ChannelListProps){
     const theme = useTheme();
-    const [_createDialogOpen, setCreateDialogOpen] = useState(false);
+    const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
     return (
         <>
             <Drawer
                 variant="permanent"
                 sx={{
-                        width: DRAWER_WID,
+                        width: DRAWER_WIDTH,
                         flexShrink: 0,
                         '& .MuiDrawer-paper':{
-                            width: DRAWER_WID,
+                            width: DRAWER_WIDTH,
                             boxSizing: 'border-box',
                             borderRight: 'none',
                             left: 72,
@@ -83,7 +83,7 @@ export function ChannelList({server: server, channels, selectedChannel, onSelect
                     
 
             </Drawer>
-            <ChannelCreateDialog/>
+            <ChannelCreateDialog open={createDialogOpen} onClose={() => setCreateDialogOpen(false)} serverId={server.id} onChannelCreated={onChannelChange} />
         </>
     )
 
