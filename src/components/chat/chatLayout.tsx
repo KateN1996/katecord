@@ -17,6 +17,7 @@ import TagIcon from '@mui/icons-material/Tag';
 import type { User } from '@supabase/supabase-js';
 import { ServerList } from '../servers/serverList';
 import type{ Server, Message, Channel } from '../../types/chat';
+import { ChannelList } from '../channels/channelList';
 
 const DRAWER_WIDTH = 240;
 
@@ -296,7 +297,14 @@ export function ChatLayout({ user }: ChatLayoutProps) {
       </Drawer> */}
 
       {/* Channel List */}
-      <Drawer
+      <ChannelList
+        serverId={selectedServer!}
+        channels={serverChannels}
+        selectedChannel={selectedChannel!}
+        onSelectChannel={setSelectedChannel}
+        onChannelChange={() => loadChannels(selectedServer!)}
+      />      
+      {/* <Drawer
         variant="permanent"
         sx={{
           width: DRAWER_WIDTH,
@@ -338,7 +346,7 @@ export function ChatLayout({ user }: ChatLayoutProps) {
             </ListItemButton>
           </ListItem>
         </List>
-      </Drawer>
+      </Drawer> */}
 
       {/* Main Chat Area */}
       <Box
