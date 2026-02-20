@@ -47,7 +47,7 @@ export function ChannelList({server: server, channels, selectedChannel, onSelect
             >
                 <Box sx={{ p: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
                     <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                        {server.id}
+                        {server.name}
                     </Typography>
                 </Box>
                 <List>
