@@ -297,13 +297,15 @@ export function ChatLayout({ user }: ChatLayoutProps) {
       </Drawer> */}
 
       {/* Channel List */}
-      <ChannelList
-        serverId={selectedServer!}
-        channels={serverChannels}
-        selectedChannel={selectedChannel!}
-        onSelectChannel={setSelectedChannel}
-        onChannelChange={() => loadChannels(selectedServer!)}
-      />      
+      {selectedServer && servers.find(s => s.id === selectedServer) && (
+        <ChannelList
+          server={servers.find(s => s.id === selectedServer)!}
+          channels={serverChannels}
+          selectedChannel={selectedChannel!}
+          onSelectChannel={setSelectedChannel}
+          onChannelChange={() => loadChannels(selectedServer!)}
+        />
+      )}     
       {/* <Drawer
         variant="permanent"
         sx={{
