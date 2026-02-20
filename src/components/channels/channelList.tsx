@@ -22,7 +22,7 @@ interface ChannelListProps {
     onChannelChange: () => void;
 }
 
-export function ChannelList({server: server, channels, selectedChannel, onSelectChannel, onChannelChange}: ChannelListProps){
+export function ChannelList({server: server, channels, selectedChannel, onSelectChannel, onChannelChange: _onChannelChange}: ChannelListProps){
     const theme = useTheme();
     const [_createDialogOpen, setCreateDialogOpen] = useState(false);
 
