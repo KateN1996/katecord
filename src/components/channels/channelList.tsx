@@ -62,7 +62,6 @@ export function ChannelList({server: server, channels, selectedChannel, onSelect
                                 <TagIcon sx={{mr: 1, fontSize:20,color: 'text.secondary'}}/>
                                 <ListItemText 
                                     primary={channel.name}
-                                    secondary={channel.description}
                                     slotProps={{ secondary: {variant: 'caption' }}}
                                 />
                             </ListItemButton>
