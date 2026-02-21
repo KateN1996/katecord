@@ -10,9 +10,9 @@ export function Auth() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [displayName, setDisplayName] = useState(''); // ADD THIS LINE
+  const [displayName, setDisplayName] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [isSignUp, setIsSignUp] = useState(false); // FIXED: was setSignUp
+  const [isSignUp, setIsSignUp] = useState(false);
 
   const validateInputs = (): boolean => {
     if (!email || !password) {
@@ -50,7 +50,7 @@ export function Auth() {
         }
       });
       if (error) throw error;
-      alert('Check your email for the confirmation link!');
+      // alert('Check your email for the confirmation link!'); TODO: re-enable this
     } catch (error: any) {
       setError(error.message);
     } finally {
@@ -99,7 +99,7 @@ export function Auth() {
         gutterBottom
         sx={{ textAlign: 'center' }}
       >
-        {isSignUp ? 'Create Account' : 'Welcome Back'}
+        {isSignUp ? 'Create Account' : 'Welcome Back to Katecord'}
       </Typography>
 
       {error && (
