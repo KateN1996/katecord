@@ -1,9 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
-import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
 import type { User } from '@supabase/supabase-js';
 import { ServerList } from '../servers/serverList';
 import type{ Server, Message, Channel } from '../../types/chat';
@@ -14,18 +11,6 @@ import { MessageInput } from './messageInput';
 interface ChatLayoutProps {
   user: User;
 }
-
-// const formatMessageTime = (timestamp: string): string => {
-//   const messageDate = new Date(timestamp);
-//   const today = new Date();
-//   const isToday = messageDate.toLocaleDateString() === today.toLocaleDateString();
-
-//   if (isToday) {
-//     return `Today at ${messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-//   }
-
-//   return messageDate.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-// };
 
 export function ChatLayout({ user }: ChatLayoutProps) {
   const [servers, setServers] = useState<Server[]>([]);
@@ -238,48 +223,7 @@ export function ChatLayout({ user }: ChatLayoutProps) {
 
         {/* Messages List */}
         <MessageList messages={messages} loading={loadingMessages}/>
-        {/* <Box
-          sx={{
-            flexGrow: 1,
-            overflowY: 'auto',
-            p: 2,
-            bgcolor: 'background.default',
-          }}
-        >
-          {loadingMessages ? (
-            <Typography sx={{ color: 'text.secondary', textAlign: 'center', mt: 4 }}>
-              Loading messages...
-            </Typography>
-          ) : messages.length === 0 ? (
-            <Typography sx={{ color: 'text.secondary', textAlign: 'center', mt: 4 }}>
-              No messages yet. Start the conversation!
-            </Typography>
-          ) : (
-            messages.map((msg) => (
-              <Box key={msg.id} sx={{ mb: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 'bold' }}>
-                    {msg.display_name}
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                    {formatMessageTime(msg.created_at)}
-                  </Typography>
-                </Box>
-                <Typography
-                  variant="body1"
-                  sx={{ color: msg.failed ? 'error.main' : 'text.primary' }}
-                >
-                  {msg.content}
-                </Typography>
-                {msg.failed && (
-                  <Typography variant="caption" sx={{ color: 'error.main' }}>
-                    Failed to send. Click to retry when I implement that functionality lol
-                  </Typography>
-                )}
-              </Box>
-            ))
-          )}
-        </Box> */}
+       
 
         {/* Message Input */}
         <Box sx={{ p: 2, bgcolor: 'background.default' }}>
@@ -291,22 +235,7 @@ export function ChatLayout({ user }: ChatLayoutProps) {
           disabled={!selectedChannel}
 
           />
-          {/* <TextField
-            fullWidth
-            placeholder={`Message #${currentChannel?.name}`}
-            value={message}
-            onChange={(e) => { setMessage(e.target.value); }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSendMessage();
-              }
-            }}
-            sx={{
-              bgcolor: 'background.paper',
-              borderRadius: 2,
-            }}
-          /> */}
+         
         </Box>
       </Box>
     </Box>
