@@ -94,18 +94,16 @@ export function ChatLayout({ user }: ChatLayoutProps) {
     console.log("Loading channels for server ID:", serverId);
     const {data} = await supabase
       .from('channels')
-      .select('*')
-      .eq('server_id', serverId)
+      .select('*') // need to load all servers <- change this later to just servers user is in
+      .eq('server_id', serverId) // added index
       .order('name') // TODO: again personalize this shit
 
       if (data) {
-        console.log("this is the fucking channels")
-        console.log(data)
+
         setChannels(data);
-        setSelectedChannel(data.length > 0 ? data[0].id : null);
-        // if (data.length > 0 && !selectedChannel) {
-        //   setSelectedChannel(data[0].id);
-        // }
+        if (!selectedChannel && data.length >0){
+          setSelectedChannel(data[0].id);
+        }
       }
   };
 
@@ -121,14 +119,16 @@ export function ChatLayout({ user }: ChatLayoutProps) {
 
     const { data, error } = await supabase
       .from('messages')
-      .select('*')
+      //.select('*')
+      .select('id, content, display_name, user_id, channel_id, created_at')
       .eq('channel_id', channelId)
-      .order('created_at', { ascending: true });
+      .order('created_at', { ascending: false }) // lol 
+      .limit(50); // TODO: implement scrolling
 
     if (error) {
       console.error('Error fetching messages:', error.message.toString());
     } else {
-      setMessages(data || []);
+      setMessages(data.reverse() || []); 
     }
 
     setLoadingMessages(false);
