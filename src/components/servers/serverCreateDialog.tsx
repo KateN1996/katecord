@@ -41,7 +41,7 @@ export function ServerCreateDialog({
         return;
     }
     
-    const {data: _serverData, error: error } = await supabase.rpc('create_server_with_channel',{serverName: serverName.trim(), owner_id: user.user?.id})
+    const {data: _serverData, error: error } = await supabase.rpc('create_server_with_channel',{server_name: serverName.trim(), owner_id: user.user?.id})
 
 
 
