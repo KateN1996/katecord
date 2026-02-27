@@ -34,6 +34,7 @@ TODO: Not listed in any particular order
     a. unique to user
 12. Editing own messages
 13. Deleting servers with correct permissions 
+14. MESSAGE ENCRYPTION COULD GO HARD BUT ALSO BE HARD IN A GROUP SETTING
 
 
 
