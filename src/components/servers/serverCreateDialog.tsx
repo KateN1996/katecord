@@ -72,7 +72,7 @@ export function ServerCreateDialog({
             label="Server Name"
             fullWidth
             value={serverName}
-            onChange={(e) => setServerName(e.target.value)}
+            onChange={(e) => { setServerName(e.target.value); }}
             placeholder="Lost Hikers 2.0 :)"
             disabled={loading}
             autoFocus

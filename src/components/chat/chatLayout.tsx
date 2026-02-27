@@ -2,33 +2,16 @@ import { useEffect, useState, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
-// import Drawer from '@mui/material/Drawer';
-// import List from '@mui/material/List';
-// import ListItem from '@mui/material/ListItem';
-// import ListItemButton from '@mui/material/ListItemButton';
-// import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import TextField from '@mui/material/TextField';
-// import AddIcon from '@mui/icons-material/Add';
 import TagIcon from '@mui/icons-material/Tag';
 import type { User } from '@supabase/supabase-js';
 import { ServerList } from '../servers/serverList';
 import type{ Server, Message, Channel } from '../../types/chat';
 import { ChannelList } from '../channels/channelList';
-
-//const DRAWER_WIDTH = 240;
-
-// interface Message {
-//   id: string;
-//   content: string;
-//   display_name: string;
-//   channel_id: number;
-//   created_at: string;
-//   failed?: boolean;
-// }
 
 interface ChatLayoutProps {
   user: User;
@@ -48,16 +31,8 @@ const formatMessageTime = (timestamp: string): string => {
 
 export function ChatLayout({ user }: ChatLayoutProps) {
   const theme = useTheme();
-  // const [servers, _setServers] = useState([
-  //   { id: 1, name: 'Gooncord' },
-  //   { id: 2, name: 'Crackheadnation' },
-  // ]);
   const [servers, setServers] = useState<Server[]>([]);
   const [channels, setChannels] = useState<Channel[]>([]);
-  // const [channels, _setChannels] = useState([
-  //   { id: 1, name: 'general', serverId: 1 },
-  //   { id: 2, name: 'vent', serverId: 1 },
-  // ]);
   const [selectedServer, setSelectedServer] = useState<number | null>(null);
   const [selectedChannel, setSelectedChannel] = useState<number | null>(null);
   const [message, setMessage] = useState('');
@@ -234,63 +209,6 @@ export function ChatLayout({ user }: ChatLayoutProps) {
         onSelectServer={setSelectedServer}
         onServersChange={loadServers}
       />
-      {/* <Drawer
-        variant="permanent"
-        sx={{
-          width: 72,
-          flexShrink: 0,
-          '& .MuiDrawer-paper': {
-            width: 72,
-            boxSizing: 'border-box',
-            bgcolor: 'secondary.main',
-            borderRight: 'none',
-          },
-        }}
-      >
-        <List sx={{ p: 1 }}>
-          {servers.map((server) => (
-            <ListItem key={server.id} disablePadding sx={{ mb: 1 }}>
-              <ListItemButton
-                onClick={() => setSelectedServer(server.id)}
-                sx={{
-                  height: 48,
-                  borderRadius: '50%',
-                  bgcolor: selectedServer === server.id
-                    ? theme.palette.primary.main
-                    : theme.palette.primary.light,
-                  '&:hover': {
-                    bgcolor: theme.palette.primary.main,
-                    borderRadius: '30%',
-                  },
-                  transition: 'all 0.2s',
-                  justifyContent: 'center',
-                }}
-              >
-                <Typography sx={{ color: 'white', fontWeight: 'bold' }}>
-                  {server.name[0]}
-                </Typography>
-              </ListItemButton>
-            </ListItem>
-          ))}
-          <ListItem disablePadding>
-            <ListItemButton
-              sx={{
-                height: 48,
-                borderRadius: '50%',
-                bgcolor: theme.palette.primary.light,
-                '&:hover': {
-                  bgcolor: theme.palette.success.light,
-                  borderRadius: '30%',
-                },
-                transition: 'all 0.2s',
-                justifyContent: 'center',
-              }}
-            >
-              <AddIcon sx={{ color: 'white' }} />
-            </ListItemButton>
-          </ListItem>
-        </List>
-      </Drawer> */}
 
       {/* Channel List */}
       {selectedServer && servers.find(s => s.id === selectedServer) && (
@@ -299,52 +217,9 @@ export function ChatLayout({ user }: ChatLayoutProps) {
           channels={serverChannels}
           selectedChannel={selectedChannel!}
           onSelectChannel={setSelectedChannel}
-          onChannelChange={() => loadChannels(selectedServer!)}
+          onChannelChange={() => loadChannels(selectedServer)}
         />
       )}     
-      {/* <Drawer
-        variant="permanent"
-        sx={{
-          width: DRAWER_WIDTH,
-          flexShrink: 0,
-          '& .MuiDrawer-paper': {
-            width: DRAWER_WIDTH,
-            boxSizing: 'border-box',
-            borderRight: 'none',
-            left: 72,
-          },
-        }}
-      >
-        <Box sx={{ p: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
-          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-            {servers.find(s => s.id === selectedServer)?.name}
-          </Typography>
-        </Box>
-        <List>
-          <ListItem>
-            <Typography variant="caption" sx={{ fontWeight: 'bold', color: 'text.secondary' }}>
-              TEXT CHANNELS
-            </Typography>
-          </ListItem>
-          {serverChannels.map((channel) => (
-            <ListItem key={channel.id} disablePadding>
-              <ListItemButton
-                selected={selectedChannel === channel.id}
-                onClick={() => setSelectedChannel(channel.id)}
-              >
-                <TagIcon sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />
-                <ListItemText primary={channel.name} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-          <ListItem disablePadding>
-            <ListItemButton>
-              <AddIcon sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />
-              <ListItemText primary="Add Channel" />
-            </ListItemButton>
-          </ListItem>
-        </List>
-      </Drawer> */}
 
       {/* Main Chat Area */}
       <Box
@@ -427,7 +302,7 @@ export function ChatLayout({ user }: ChatLayoutProps) {
             fullWidth
             placeholder={`Message #${currentChannel?.name}`}
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={(e) => { setMessage(e.target.value); }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();

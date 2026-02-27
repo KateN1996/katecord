@@ -44,7 +44,7 @@ export function ServerList({
           {servers.map((server) => (
             <ListItem key={server.id} disablePadding sx={{ mb: 1 }}>
               <ListItemButton
-                onClick={() => onSelectServer(server.id)}
+                onClick={() => { onSelectServer(server.id); }}
                 sx={{
                   height: 48,
                   borderRadius: '50%',
@@ -67,7 +67,7 @@ export function ServerList({
           ))}
           <ListItem disablePadding>
             <ListItemButton
-              onClick={() => setCreateDialogOpen(true)}
+              onClick={() => { setCreateDialogOpen(true); }}
               sx={{
                 height: 48,
                 borderRadius: '50%',
@@ -88,7 +88,7 @@ export function ServerList({
 
       <ServerCreateDialog
         open={createDialogOpen}
-        onClose={() => setCreateDialogOpen(false)}
+        onClose={() => { setCreateDialogOpen(false); }}
         onServerCreated={onServersChange}
       />
     </>
