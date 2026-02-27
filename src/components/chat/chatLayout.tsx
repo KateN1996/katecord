@@ -78,10 +78,6 @@ export function ChatLayout({ user }: ChatLayoutProps) {
     
       if (data){
         setServers(data);
-        console.log("in load servers this is the data:")
-        console.log("data")
-        console.log("\n/n\n/n")
-        console.log(data[0].id)
         setSelectedServer(data[0].id);
       }
   }
