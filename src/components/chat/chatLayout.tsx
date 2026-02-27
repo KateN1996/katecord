@@ -3,34 +3,31 @@ import { supabase } from '../../lib/supabase';
 import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
 import TextField from '@mui/material/TextField';
-import TagIcon from '@mui/icons-material/Tag';
 import type { User } from '@supabase/supabase-js';
 import { ServerList } from '../servers/serverList';
 import type{ Server, Message, Channel } from '../../types/chat';
 import { ChannelList } from '../channels/channelList';
-
+import { ChannelHeader } from '../channels/channelHeader';
+import { MessageList } from './MessageList';
+import { MessageInput } from './messageInput';
 interface ChatLayoutProps {
   user: User;
 }
 
-const formatMessageTime = (timestamp: string): string => {
-  const messageDate = new Date(timestamp);
-  const today = new Date();
-  const isToday = messageDate.toLocaleDateString() === today.toLocaleDateString();
+// const formatMessageTime = (timestamp: string): string => {
+//   const messageDate = new Date(timestamp);
+//   const today = new Date();
+//   const isToday = messageDate.toLocaleDateString() === today.toLocaleDateString();
 
-  if (isToday) {
-    return `Today at ${messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-  }
+//   if (isToday) {
+//     return `Today at ${messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+//   }
 
-  return messageDate.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-};
+//   return messageDate.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+// };
 
 export function ChatLayout({ user }: ChatLayoutProps) {
-  const theme = useTheme();
   const [servers, setServers] = useState<Server[]>([]);
   const [channels, setChannels] = useState<Channel[]>([]);
   const [selectedServer, setSelectedServer] = useState<number | null>(null);
@@ -94,7 +91,7 @@ export function ChatLayout({ user }: ChatLayoutProps) {
       .select('id, content, display_name, user_id, channel_id, created_at')
       .eq('channel_id', channelId)
       .order('created_at', { ascending: false }) // lol 
-      .limit(50); // TODO: implement scrolling
+      // .limit(50); // TODO: implement scrolling
 
     if (error) {
       console.error('Error fetching messages:', error.message.toString());
@@ -233,27 +230,15 @@ export function ChatLayout({ user }: ChatLayoutProps) {
         }}
       >
         {/* Top Bar */}
-        <AppBar
-          position="static"
-          elevation={0}
-          sx={{ bgcolor: 'background.default', borderBottom: `1px solid ${theme.palette.divider}` }}
-        >
-          <Toolbar>
-            <TagIcon sx={{ mr: 1, color: 'text.secondary' }} />
-            <Typography variant="h6" sx={{ flexGrow: 1, color: 'text.primary' }}>
-              {currentChannel?.name}
-            </Typography>
-            <Typography sx={{ mr: 2, color: 'text.secondary' }}>
-              {displayName}
-            </Typography>
-            <Button onClick={handleSignOut} variant="outlined" size="small">
-              Sign Out
-            </Button>
-          </Toolbar>
-        </AppBar>
+        <ChannelHeader
+          channelName={currentChannel?.name || 'Select a channel'}
+          displayName={displayName}
+          handleSignOut={handleSignOut}
+        />
 
-        {/* Messages Area */}
-        <Box
+        {/* Messages List */}
+        <MessageList messages={messages} loading={loadingMessages}/>
+        {/* <Box
           sx={{
             flexGrow: 1,
             overflowY: 'auto',
@@ -294,11 +279,19 @@ export function ChatLayout({ user }: ChatLayoutProps) {
               </Box>
             ))
           )}
-        </Box>
+        </Box> */}
 
         {/* Message Input */}
         <Box sx={{ p: 2, bgcolor: 'background.default' }}>
-          <TextField
+          <MessageInput 
+          value={message}
+          onChange={setMessage}
+          onSend={handleSendMessage}
+          placeholder={`Message #${currentChannel?.name || 'channel'}`}
+          disabled={!selectedChannel}
+
+          />
+          {/* <TextField
             fullWidth
             placeholder={`Message #${currentChannel?.name}`}
             value={message}
@@ -313,7 +306,7 @@ export function ChatLayout({ user }: ChatLayoutProps) {
               bgcolor: 'background.paper',
               borderRadius: 2,
             }}
-          />
+          /> */}
         </Box>
       </Box>
     </Box>
