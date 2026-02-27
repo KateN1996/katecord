@@ -106,7 +106,7 @@ export function Auth() {
         <Alert 
           severity="error" 
           sx={{ mb: 2 }}
-          onClose={() => setError(null)}
+          onClose={() => { setError(null); }}
         >
           {error}
         </Alert>
@@ -117,7 +117,7 @@ export function Auth() {
           label="Display Name"
           fullWidth
           value={displayName}
-          onChange={(e) => setDisplayName(e.target.value)}
+          onChange={(e) => { setDisplayName(e.target.value); }}
           sx={{ mb: 2 }}
           disabled={loading}
           autoFocus
@@ -129,7 +129,7 @@ export function Auth() {
         type="email"
         fullWidth
         value={email}
-        onChange={(e) => setEmail(e.target.value)}
+        onChange={(e) => { setEmail(e.target.value); }}
         onKeyDown={handleKeyPress}
         sx={{ mb: 2 }}
         disabled={loading}
@@ -142,7 +142,7 @@ export function Auth() {
         type="password"
         fullWidth
         value={password}
-        onChange={(e) => setPassword(e.target.value)}
+        onChange={(e) => { setPassword(e.target.value); }}
         onKeyDown={handleKeyPress}
         sx={{ mb: 2 }}
         disabled={loading}
@@ -164,7 +164,7 @@ export function Auth() {
           <Button 
             variant="text" 
             fullWidth 
-            onClick={() => setIsSignUp(false)}
+            onClick={() => { setIsSignUp(false); }}
           >
             Already have an account? Sign In
           </Button>
@@ -184,7 +184,7 @@ export function Auth() {
           <Button 
             variant="text" 
             fullWidth 
-            onClick={() => setIsSignUp(true)}
+            onClick={() => { setIsSignUp(true); }}
           >
             Need an account? Sign Up
           </Button>

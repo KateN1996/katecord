@@ -72,7 +72,7 @@ export function ChannelCreateDialog({open,onClose, serverId, onChannelCreated}: 
                     label="Channel Name"
                     fullWidth
                     value={channelName}
-                    onChange={(e) => setChannelName(e.target.value)}
+                    onChange={(e) => { setChannelName(e.target.value); }}
                     placeholder="general"
                     sx={{ mb: 2 }}
                     disabled={loading}
@@ -83,7 +83,7 @@ export function ChannelCreateDialog({open,onClose, serverId, onChannelCreated}: 
                     label="Description (optional)"
                     fullWidth
                     value={description}
-                    onChange={(e) => setDescription(e.target.value)}
+                    onChange={(e) => { setDescription(e.target.value); }}
                     placeholder="Generally general"
                     multiline
                     rows={2}

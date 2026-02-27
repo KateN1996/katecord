@@ -58,7 +58,7 @@ export function ChannelList({server: server, channels, selectedChannel, onSelect
                     {channels.map((channel) => (
 
                         <ListItem key ={channel.id} disablePadding>
-                            <ListItemButton selected= {selectedChannel === channel.id} onClick={() => onSelectChannel(channel.id)}>
+                            <ListItemButton selected= {selectedChannel === channel.id} onClick={() => { onSelectChannel(channel.id); }}>
                                 <TagIcon sx={{mr: 1, fontSize:20,color: 'text.secondary'}}/>
                                 <ListItemText 
                                     primary={channel.name}
@@ -72,7 +72,7 @@ export function ChannelList({server: server, channels, selectedChannel, onSelect
                     )
                     )}
                     <ListItem disablePadding>
-                        <ListItemButton onClick={() => setCreateDialogOpen(true)}>
+                        <ListItemButton onClick={() => { setCreateDialogOpen(true); }}>
                             <AddIcon sx ={{mr: 1, fontSize:20,color: 'text.secondary'}}/>
                             <ListItemText primary ="Add Channel"/>
 
@@ -83,7 +83,7 @@ export function ChannelList({server: server, channels, selectedChannel, onSelect
                     
 
             </Drawer>
-            <ChannelCreateDialog open={createDialogOpen} onClose={() => setCreateDialogOpen(false)} serverId={server.id} onChannelCreated={onChannelChange} />
+            <ChannelCreateDialog open={createDialogOpen} onClose={() => { setCreateDialogOpen(false); }} serverId={server.id} onChannelCreated={onChannelChange} />
         </>
     )
 

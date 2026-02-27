@@ -12,7 +12,7 @@ import Box from '@mui/material/Box';
 interface ServerCreateDialogProps {
   open: boolean;
   onClose: () => void;
-  onServerCreated: () => void;
+onServerCreated: () => void;
 }
 
 export function ServerCreateDialog({ 
@@ -41,14 +41,7 @@ export function ServerCreateDialog({
         return;
     }
     
-    const {data: serverData, error: error } = await supabase
-      .from('servers')
-      .insert({
-        name: serverName.trim(),
-        owner_id: user.user?.id
-      })
-      .select()
-      .single();
+    const {data: _serverData, error: error } = await supabase.rpc('create_server_with_channel',{server_name: serverName.trim(), owner_id: user.user?.id})
 
 
 
@@ -58,23 +51,6 @@ export function ServerCreateDialog({
       return;
     } 
 
-    const { error: channelError} = await supabase
-        .from('channels')
-        .insert({
-            server_id: serverData.id,
-            name: 'general',
-            description: 'Generally General',
-            created_by: user.user?.id
-        });
-    
-    if (channelError){
-        console.error('Error creating general channel:', channelError);
-        setError('Server created but failed to create general channel'); // is there a better way to do this? like a transaction
-        setLoading(false);
-        return;
-        
-
-    }
 
     setLoading(false);
     setServerName('');
@@ -96,7 +72,7 @@ export function ServerCreateDialog({
             label="Server Name"
             fullWidth
             value={serverName}
-            onChange={(e) => setServerName(e.target.value)}
+            onChange={(e) => { setServerName(e.target.value); }}
             placeholder="Lost Hikers 2.0 :)"
             disabled={loading}
             autoFocus

@@ -19,7 +19,7 @@ function App() {
       setUser(session?.user ?? null);
     });
 
-    return () => subscription.unsubscribe();
+    return () => { subscription.unsubscribe(); };
   }, []);
 
   // const handleSignOut = async () => {
