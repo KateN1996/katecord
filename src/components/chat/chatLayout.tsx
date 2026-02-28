@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
 import Box from '@mui/material/Box';
 import type { User } from '@supabase/supabase-js';
@@ -21,11 +21,13 @@ export function ChatLayout({ user }: ChatLayoutProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
 
+  const messageCacheRef = useRef<Record<number, Message[]>>({});
   const subscriptionRef = useRef<any>(null);
+  const initialLoadDoneRef = useRef(false);
 
   const displayName = user.user_metadata?.display_name || user.email;
   const currentChannel = channels.find(c => c.id === selectedChannel);
-  const serverChannels = channels.filter(c => c.server_id === selectedServer);
+  const serverChannels = useMemo(() => channels.filter(c => c.server_id === selectedServer), [channels, selectedServer]);
 
   const loadServers = async () => {
     const {data } = await supabase
@@ -33,18 +35,43 @@ export function ChatLayout({ user }: ChatLayoutProps) {
       .select('*')
       .order('created_at'); // lets just do it by time created at right now  and figure out personal ordering later
     
-      if (data){
-        setServers(data);
-        setSelectedServer(data[0].id);
-      }
+    if (!data || data.length === 0 ){
+      return;
+    }
+
+    setServers(data);
+    const firstServer = data[0];
+
+    const lastServerId = Number(localStorage.getItem('lastServer'));
+
+    const initialServer = data.find(s => s.id === lastServerId) ?? firstServer;
+    setSelectedServer(initialServer.id);
+
+    const { data: channelData } = await supabase
+      .from('channels')
+      .select('*')
+      .eq('server_id', initialServer.id)
+      .order('name');
+
+    if (!channelData || channelData.length === 0) {
+      initialLoadDoneRef.current = true;
+      return;
+    }
+
+    setChannels(channelData);
+
+    const lastChannelId = Number(localStorage.getItem('lastChannel'));
+    const initialChannel = channelData.find(c => c.id === lastChannelId) ?? channelData[0];
+    setSelectedChannel(initialChannel.id);
+
+    initialLoadDoneRef.current = true;
   }
 
   useEffect(() => {
     loadServers();
   }, []);
 
-  const loadChannels = async (serverId: number) => {
-    console.log("Loading channels for server ID:", serverId);
+  const loadChannels = useCallback(async (serverId: number) => {
     const {data} = await supabase
       .from('channels')
       .select('*') // need to load all servers <- change this later to just servers user is in
@@ -52,21 +79,34 @@ export function ChatLayout({ user }: ChatLayoutProps) {
       .order('name') // TODO: again personalize this shit
 
       if (data) {
-
         setChannels(data);
-        if (!selectedChannel && data.length >0){
-          setSelectedChannel(data[0].id);
-        }
+        setSelectedChannel(data[0]?.id ?? null);
       }
-  };
+  },[]);
 
   useEffect(() => {
-    if (selectedServer) {
-      loadChannels(selectedServer);
+    if(!selectedServer){
+      return;
     }
-  }, [selectedServer]);
+
+    localStorage.setItem('lastServer', String(selectedServer));
+
+    if(!initialLoadDoneRef.current){ //load servers already handled this at this point
+      return;
+    }
+
+
+    loadChannels(selectedServer);
+    
+  }, [selectedServer, loadChannels]);
 
   const fetchMessages = async (channelId: number) => {
+    // if (messageCacheRef.current[channelId]){
+    //   setMessages(messageCacheRef.current[channelId]);
+    //   return;
+
+    // }
+
     setLoadingMessages(true);
     setMessages([]);
 
@@ -81,7 +121,11 @@ export function ChatLayout({ user }: ChatLayoutProps) {
     if (error) {
       console.error('Error fetching messages:', error.message.toString());
     } else {
-      setMessages(data.reverse() || []); 
+      // need to cache in here
+      const msgs = (data || []).reverse();
+      messageCacheRef.current[channelId] = msgs
+      setMessages(msgs); 
+
     }
 
     setLoadingMessages(false);
@@ -90,9 +134,16 @@ export function ChatLayout({ user }: ChatLayoutProps) {
   useEffect(() => {
     if (!selectedChannel){
       return;
-
     }
-    fetchMessages(selectedChannel);
+
+    localStorage.setItem('lastChannel', String(selectedChannel));
+
+    if (messageCacheRef.current[selectedChannel]){
+      setMessages(messageCacheRef.current[selectedChannel]);
+    }else{
+      fetchMessages(selectedChannel);
+    }
+    
 
     if (subscriptionRef.current) {
       supabase.removeChannel(subscriptionRef.current);
@@ -110,7 +161,7 @@ export function ChatLayout({ user }: ChatLayoutProps) {
         },
         (payload) => {
           const newMessage = payload.new as Message;
-          setMessages(prev => {
+          setMessages(prev => { // cache in here too
             if (prev.some(msg => msg.id === newMessage.id)) return prev;
 
             // Replace optimistic duplicate: same content, same user, within 5 seconds
@@ -121,13 +172,22 @@ export function ChatLayout({ user }: ChatLayoutProps) {
                 Math.abs(new Date(msg.created_at).getTime() - new Date(newMessage.created_at).getTime()) < 5000
             );
 
+            let updated: Message[];
+
             if (optimisticIndex !== -1) {
-              const updated = [...prev];
+              updated = [...prev];
               updated[optimisticIndex] = newMessage;
-              return updated;
+            }else{
+              updated = [...prev, newMessage];
             }
 
-            return [...prev, newMessage];
+            // if (selectedChannel){
+            //   messageCacheRef.current[selectedChannel] = updated;
+            // }
+
+            messageCacheRef.current[newMessage.channel_id] = updated;
+
+            return updated;
           });
         }
       )
@@ -162,7 +222,12 @@ export function ChatLayout({ user }: ChatLayoutProps) {
       failed: false,
     };
 
-    setMessages(prev => [...prev, newMessage]);
+    setMessages( prev => {
+      const updated = [...prev, newMessage];
+      messageCacheRef.current[selectedChannel] = updated;
+      return updated;
+
+    });
     setMessage('');
 
     const { error } = await supabase
