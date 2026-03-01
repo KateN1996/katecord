@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { supabase } from '../../lib/supabase';
 import Box from '@mui/material/Box';
 import type { User } from '@supabase/supabase-js';
@@ -27,6 +27,12 @@ export function ChatLayout({ user }: ChatLayoutProps) {
   const currentChannel = channels.find(c => c.id === selectedChannel);
   const serverChannels = channels.filter(c => c.server_id === selectedServer);
 
+  const isServerOwner = useMemo(() => {
+    if (!selectedServer || !servers.length) return false;
+    const currentServer = servers.find(s => s.id === selectedServer);
+    return currentServer?.owner_id === user.id;
+  }, [selectedServer, servers, user.id]);
+
   const loadServers = async () => {
     const {data } = await supabase
       .from('servers')
@@ -36,6 +42,7 @@ export function ChatLayout({ user }: ChatLayoutProps) {
       if (data){
         setServers(data);
         setSelectedServer(data[0].id);
+    
       }
   }
 
@@ -222,7 +229,7 @@ export function ChatLayout({ user }: ChatLayoutProps) {
         />
 
         {/* Messages List */}
-        <MessageList messages={messages} loading={loadingMessages}/>
+        <MessageList messages={messages} loading={loadingMessages} currentUserId={user.id} isServerOwner={isServerOwner}/>
        
 
         {/* Message Input */}
