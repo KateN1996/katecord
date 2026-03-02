@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import type { Message } from '../../types/chat';
-import { MessageDeleteConfirmation } from './messageDeleteConfirmation';
+import { MessageDeleteConfirmDialog } from './messageDeleteConfirmation';
 import { useState } from 'react';
 import DeleteIcon from '@mui/icons-material/Delete'
 import IconButton  from '@mui/material/IconButton';
@@ -19,10 +19,10 @@ export function MessageItem({ message, currentUserId, isServerOwner, onDelete }:
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
     const canDelete = isServerOwner || message.user_id === currentUserId;
-    console.log("this is the message ", message)
-    console.log(" this is the server owner ", isServerOwner)
-    console.log("message user id ", message.user_id)
-    console.log(" current user id ", currentUserId)
+    // console.log("this is the message ", message)
+    // console.log(" this is the server owner ", isServerOwner)
+    // console.log("message user id ", message.user_id)
+    // console.log(" current user id ", currentUserId)
 
     const formatMessageTime = (timestamp: string): string => {
   const messageDate = new Date(timestamp);
@@ -121,7 +121,7 @@ return (
                 )}
             </Box>
             
-            <MessageDeleteConfirmation
+            <MessageDeleteConfirmDialog
                 open={showDeleteDialog}
                 onClose={handleDeleteCancel}
                 onConfirmation={handleDeleteConfirm}

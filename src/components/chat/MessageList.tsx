@@ -9,10 +9,11 @@ interface MessageListProps {
   loading: boolean;
   currentUserId: string;
   isServerOwner: boolean;
+  onDeleteMessage: (messageId: string) => void;
 
 }
 
-export function MessageList({ messages, loading, currentUserId, isServerOwner }: MessageListProps) {
+export function MessageList({ messages, loading, currentUserId, isServerOwner, onDeleteMessage }: MessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -45,7 +46,7 @@ export function MessageList({ messages, loading, currentUserId, isServerOwner }:
       ) : (
         <>
           {messages.map((msg) => (
-            <MessageItem key={msg.id} message={msg} currentUserId={currentUserId} isServerOwner={isServerOwner}/>
+            <MessageItem key={msg.id} message={msg} currentUserId={currentUserId} isServerOwner={isServerOwner} onDelete={onDeleteMessage}/>
           ))}
           <div ref={messagesEndRef} />
         </>

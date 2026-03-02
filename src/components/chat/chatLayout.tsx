@@ -33,6 +33,25 @@ export function ChatLayout({ user }: ChatLayoutProps) {
     return currentServer?.owner_id === user.id;
   }, [selectedServer, servers, user.id]);
 
+  const handleDeleteMessage = async (messageId: string) => {
+  try {
+    const { error } = await supabase
+      .from('messages')
+      .delete()
+      .eq('id', messageId);
+
+    if (error) {
+      console.error('Error deleting message:', error.message);
+      return;
+    }
+
+    // Update local state
+    setMessages(prev => prev.filter(m => m.id !== messageId));
+  } catch (error) {
+    console.error('Error deleting message:', error);
+  }
+};
+
   const loadServers = async () => {
     const {data } = await supabase
       .from('servers')
@@ -61,7 +80,9 @@ export function ChatLayout({ user }: ChatLayoutProps) {
       if (data) {
 
         setChannels(data);
-        if (!selectedChannel && data.length >0){
+        console.log("data ", data)
+        if (data.length >0){
+          console.log("HERE")
           setSelectedChannel(data[0].id);
         }
       }
@@ -229,7 +250,7 @@ export function ChatLayout({ user }: ChatLayoutProps) {
         />
 
         {/* Messages List */}
-        <MessageList messages={messages} loading={loadingMessages} currentUserId={user.id} isServerOwner={isServerOwner}/>
+        <MessageList messages={messages} loading={loadingMessages} currentUserId={user.id} isServerOwner={isServerOwner} onDeleteMessage={handleDeleteMessage}/>
        
 
         {/* Message Input */}
