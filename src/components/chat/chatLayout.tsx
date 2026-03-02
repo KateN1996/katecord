@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { supabase } from '../../lib/supabase';
 import Box from '@mui/material/Box';
 import type { User } from '@supabase/supabase-js';
@@ -27,6 +27,31 @@ export function ChatLayout({ user }: ChatLayoutProps) {
   const currentChannel = channels.find(c => c.id === selectedChannel);
   const serverChannels = channels.filter(c => c.server_id === selectedServer);
 
+  const isServerOwner = useMemo(() => {
+    if (!selectedServer || !servers.length) return false;
+    const currentServer = servers.find(s => s.id === selectedServer);
+    return currentServer?.owner_id === user.id;
+  }, [selectedServer, servers, user.id]);
+
+  const handleDeleteMessage = async (messageId: string) => {
+  try {
+    const { error } = await supabase
+      .from('messages')
+      .delete()
+      .eq('id', messageId);
+
+    if (error) {
+      console.error('Error deleting message:', error.message);
+      return;
+    }
+
+    // Update local state
+    setMessages(prev => prev.filter(m => m.id !== messageId));
+  } catch (error) {
+    console.error('Error deleting message:', error);
+  }
+};
+
   const loadServers = async () => {
     const {data } = await supabase
       .from('servers')
@@ -36,6 +61,7 @@ export function ChatLayout({ user }: ChatLayoutProps) {
       if (data){
         setServers(data);
         setSelectedServer(data[0].id);
+    
       }
   }
 
@@ -54,7 +80,9 @@ export function ChatLayout({ user }: ChatLayoutProps) {
       if (data) {
 
         setChannels(data);
-        if (!selectedChannel && data.length >0){
+        console.log("data ", data)
+        if (data.length >0){
+          console.log("HERE")
           setSelectedChannel(data[0].id);
         }
       }
@@ -222,7 +250,7 @@ export function ChatLayout({ user }: ChatLayoutProps) {
         />
 
         {/* Messages List */}
-        <MessageList messages={messages} loading={loadingMessages}/>
+        <MessageList messages={messages} loading={loadingMessages} currentUserId={user.id} isServerOwner={isServerOwner} onDeleteMessage={handleDeleteMessage}/>
        
 
         {/* Message Input */}

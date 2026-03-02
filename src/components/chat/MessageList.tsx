@@ -7,9 +7,13 @@ import type { Message } from '../../types/chat';
 interface MessageListProps {
   messages: Message[];
   loading: boolean;
+  currentUserId: string;
+  isServerOwner: boolean;
+  onDeleteMessage: (messageId: string) => void;
+
 }
 
-export function MessageList({ messages, loading }: MessageListProps) {
+export function MessageList({ messages, loading, currentUserId, isServerOwner, onDeleteMessage }: MessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -42,7 +46,7 @@ export function MessageList({ messages, loading }: MessageListProps) {
       ) : (
         <>
           {messages.map((msg) => (
-            <MessageItem key={msg.id} message={msg} />
+            <MessageItem key={msg.id} message={msg} currentUserId={currentUserId} isServerOwner={isServerOwner} onDelete={onDeleteMessage}/>
           ))}
           <div ref={messagesEndRef} />
         </>
