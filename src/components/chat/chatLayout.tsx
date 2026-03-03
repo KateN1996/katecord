@@ -33,12 +33,44 @@ export function ChatLayout({ user }: ChatLayoutProps) {
     return currentServer?.owner_id === user.id;
   }, [selectedServer, servers, user.id]);
 
+  const handleEditMessage = async (messageId: string, newMessage: string) => {
+    try {
+      console.log('inside edit')
+      const { data, error } = await supabase
+        .from('messages')
+        .update({content: newMessage, updated_at: new Date().toISOString(), edited: true})
+        .eq('id', messageId)
+        .select();
+
+      console.log('got messager data from server ', data)
+
+      if (error) {
+        console.error('Error updating message:', error.message);
+        return;
+      }
+
+      // Update local state
+       setMessages(prev => 
+        prev.map(msg => 
+          msg.id === messageId 
+            ? { ...msg, content: newMessage } 
+            : msg
+        )
+      );
+      
+    } catch (error) {
+      console.error('Error updating message:', error);
+   }
+  }
+
   const handleDeleteMessage = async (messageId: string) => {
   try {
-    const { error } = await supabase
+    console.log('inside delete')
+    const { data, error } = await supabase
       .from('messages')
       .delete()
-      .eq('id', messageId);
+      .eq('id', messageId)
+
 
     if (error) {
       console.error('Error deleting message:', error.message);
@@ -250,7 +282,7 @@ export function ChatLayout({ user }: ChatLayoutProps) {
         />
 
         {/* Messages List */}
-        <MessageList messages={messages} loading={loadingMessages} currentUserId={user.id} isServerOwner={isServerOwner} onDeleteMessage={handleDeleteMessage}/>
+        <MessageList messages={messages} loading={loadingMessages} currentUserId={user.id} isServerOwner={isServerOwner} onDeleteMessage={handleDeleteMessage} onEditMessage={handleEditMessage}/>
        
 
         {/* Message Input */}
