@@ -18,7 +18,7 @@ export function MessageList({ messages, loading, currentUserId, isServerOwner, o
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages.length]);
 
   return (
     <Box 

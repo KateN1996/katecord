@@ -48,10 +48,12 @@ export function MessageItem({ message, currentUserId, isServerOwner, onDelete, o
             setIsEditing(false);
             return;
         }
+
+        setIsEditing(false);
         
         try {
             await onEdit(message.id, editContent);
-            setIsEditing(false);
+            
         } catch (error) {
             console.error('Error saving edit:', error);
         }
@@ -139,7 +141,7 @@ export function MessageItem({ message, currentUserId, isServerOwner, onDelete, o
                             }}
                         >
                             {message.content}
-                            {message.is_edited && ( 
+                            {message.edited && ( 
                                 <Typography
                                     component="span"
                                     variant="caption"

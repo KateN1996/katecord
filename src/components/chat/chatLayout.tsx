@@ -53,7 +53,7 @@ export function ChatLayout({ user }: ChatLayoutProps) {
        setMessages(prev => 
         prev.map(msg => 
           msg.id === messageId 
-            ? { ...msg, content: newMessage } 
+            ? { ...msg, content: newMessage, edited: true } 
             : msg
         )
       );
@@ -133,7 +133,7 @@ export function ChatLayout({ user }: ChatLayoutProps) {
     const { data, error } = await supabase
       .from('messages')
       //.select('*')
-      .select('id, content, display_name, user_id, channel_id, created_at')
+      .select('id, content, display_name, user_id, channel_id, created_at, edited')
       .eq('channel_id', channelId)
       .order('created_at', { ascending: false }) // lol 
       // .limit(50); // TODO: implement scrolling
