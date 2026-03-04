@@ -11,6 +11,9 @@ import TagIcon from '@mui/icons-material/Tag';
 import AddIcon from '@mui/icons-material/Add';
 import { ChannelCreateDialog } from './channelCreateDialog';
 import type { Channel, Server } from '../../types/chat';
+import IconButton  from '@mui/material/IconButton';
+import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
+import EditIcon from '@mui/icons-material/Edit';
 
 const DRAWER_WIDTH = 240;
 
@@ -45,10 +48,23 @@ export function ChannelList({server: server, channels, selectedChannel, onSelect
                         
                     }}
             >
-                <Box sx={{ p: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
-                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                        {server.name}
-                    </Typography>
+                <Box sx={{ 
+                p: 2, 
+                borderBottom: `1px solid ${theme.palette.divider}`,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                }}>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', flex: 1, minWidth: 0 }} noWrap>
+                    {server.name}
+                </Typography>
+                <IconButton 
+                    size="small" 
+                    onClick={() => {}}
+                    sx={{ p: 0.5, flexShrink: 0 }}
+                >
+                    <PersonAddAlt1Icon fontSize="small" />
+                </IconButton>
                 </Box>
                 <List>
                     <ListItem>
@@ -58,7 +74,7 @@ export function ChannelList({server: server, channels, selectedChannel, onSelect
                     {channels.map((channel) => (
 
                         <ListItem key ={channel.id} disablePadding>
-                            <ListItemButton selected= {selectedChannel === channel.id} onClick={() => { onSelectChannel(channel.id); }}>
+                            <ListItemButton selected= {selectedChannel === channel.id} onClick={() => onSelectChannel(channel.id)}>
                                 <TagIcon sx={{mr: 1, fontSize:20,color: 'text.secondary'}}/>
                                 <ListItemText 
                                     primary={channel.name}
@@ -72,7 +88,7 @@ export function ChannelList({server: server, channels, selectedChannel, onSelect
                     )
                     )}
                     <ListItem disablePadding>
-                        <ListItemButton onClick={() => { setCreateDialogOpen(true); }}>
+                        <ListItemButton onClick={() => setCreateDialogOpen(true)}>
                             <AddIcon sx ={{mr: 1, fontSize:20,color: 'text.secondary'}}/>
                             <ListItemText primary ="Add Channel"/>
 
@@ -83,7 +99,7 @@ export function ChannelList({server: server, channels, selectedChannel, onSelect
                     
 
             </Drawer>
-            <ChannelCreateDialog open={createDialogOpen} onClose={() => { setCreateDialogOpen(false); }} serverId={server.id} onChannelCreated={onChannelChange} />
+            <ChannelCreateDialog open={createDialogOpen} onClose={() => setCreateDialogOpen(false)} serverId={server.id} onChannelCreated={onChannelChange} />
         </>
     )
 
