@@ -13,7 +13,7 @@ import { ChannelCreateDialog } from './channelCreateDialog';
 import type { Channel, Server } from '../../types/chat';
 import IconButton  from '@mui/material/IconButton';
 import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
-import EditIcon from '@mui/icons-material/Edit';
+
 
 const DRAWER_WIDTH = 240;
 
