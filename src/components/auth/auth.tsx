@@ -19,10 +19,6 @@ export function Auth() {
       setError('Please enter both email and password');
       return false;
     }
-    if (!email.includes('@')) {
-      setError('Please enter a valid email address');
-      return false;
-    }
     if (password.length < 6) {
       setError('Password must be at least 6 characters long');
       return false;

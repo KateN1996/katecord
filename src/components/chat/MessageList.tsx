@@ -10,15 +10,15 @@ interface MessageListProps {
   currentUserId: string;
   isServerOwner: boolean;
   onDeleteMessage: (messageId: string) => void;
-
+  onEditMessage: (messageId: string, newMessage: string) => void;
 }
 
-export function MessageList({ messages, loading, currentUserId, isServerOwner, onDeleteMessage }: MessageListProps) {
+export function MessageList({ messages, loading, currentUserId, isServerOwner, onDeleteMessage, onEditMessage }: MessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages.length]);
 
   return (
     <Box 
@@ -46,7 +46,7 @@ export function MessageList({ messages, loading, currentUserId, isServerOwner, o
       ) : (
         <>
           {messages.map((msg) => (
-            <MessageItem key={msg.id} message={msg} currentUserId={currentUserId} isServerOwner={isServerOwner} onDelete={onDeleteMessage}/>
+            <MessageItem key={msg.id} message={msg} currentUserId={currentUserId} isServerOwner={isServerOwner} onDelete={onDeleteMessage} onEdit={onEditMessage}/>
           ))}
           <div ref={messagesEndRef} />
         </>

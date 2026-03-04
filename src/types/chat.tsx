@@ -22,4 +22,6 @@ export interface Message {
   channel_id: number;
   created_at: string;
   failed?: boolean;
+  edited?: boolean;
+  updated_at?: string;
 }
