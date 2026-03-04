@@ -66,7 +66,7 @@ export function ChatLayout({ user }: ChatLayoutProps) {
   const handleDeleteMessage = async (messageId: string) => {
   try {
     console.log('inside delete')
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('messages')
       .delete()
       .eq('id', messageId)
