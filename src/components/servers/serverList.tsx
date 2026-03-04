@@ -8,8 +8,6 @@ import Typography from '@mui/material/Typography';
 import AddIcon from '@mui/icons-material/Add';
 import { ServerCreateDialog } from './serverCreateDialog';
 import type { Server } from '../../types/chat';
-import IconButton  from '@mui/material/IconButton';
-import EditIcon from '@mui/icons-material/Edit';
 
 interface ServerListProps {
   servers: Server[];
